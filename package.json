@@ -5,7 +5,9 @@
   "main": "src/server.mjs",
   "scripts": {
     "start": "webpack --mode production && node ./src/server.mjs",
-    "start-dev": "webpack --mode development && node ./src/server.mjs"
+    "start:dev": "npm-run-all --parallel watch:server watch:build",
+    "watch:build": "webpack --watch --mode development",
+    "watch:server": "nodemon \"./src/server.js\" --watch \"./dist\""
   },
   "author": "",
   "license": "ISC",
@@ -23,7 +25,9 @@
   "dependencies": {
     "express": "^4.17.3",
     "html-webpack-plugin": "^5.5.0",
+    "npm-run-all": "^4.1.5",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "reaflow": "^4.2.16"
   }
 }

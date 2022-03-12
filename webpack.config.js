@@ -28,5 +28,8 @@ module.exports = {
     filename: "app.js",
     path: path.resolve(__dirname, "build"),
   },
-  plugins: plugins
+  plugins: plugins,
+  watchOptions: {
+    ignored: '**/node_modules'
+  }
 };
