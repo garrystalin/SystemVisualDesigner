@@ -1,39 +1,32 @@
-import React, {
-  useState,
-  useRef,
-  useCallback,
-} from "react";
+import React, { useState, useRef, useCallback } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
   useNodesState,
   useEdgesState,
   Controls,
+  Background,
+  Connection,
+  Edge,
+  NodeTypes,
 } from "react-flow-renderer";
 import NavBar from "./NavBar/NavBar";
 import "./App.scss";
 import Menu from "./Menu/Menu";
-
-const initialNodes = [
-  {
-    id: "1",
-    type: "input",
-    data: { label: "input node" },
-    position: { x: 250, y: 5 },
-  },
-];
+import DefaultNode from "./Nodes/DefaultNode";
 
 let id = 0;
 const getId = () => `dndnode_${id++}`;
+const nodeTypes = { defaultNode: DefaultNode };
 
 const App = () => {
   const reactFlowWrapper = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params: Edge<any> | Connection) => setEdges((eds) => addEdge(params, eds)),
     []
   );
 
@@ -58,9 +51,10 @@ const App = () => {
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
+
       const newNode = {
         id: getId(),
-        type,
+        type: "defaultNode",
         position,
         data: { label: `${type} node` },
       };
@@ -90,17 +84,20 @@ const App = () => {
         <NavBar />
         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
           <ReactFlow
-            nodes={nodes}
             edges={edges}
+            nodes={nodes}
+            nodeTypes={nodeTypes as unknown as NodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
+            snapToGrid={true}
             fitView
           >
             <Controls />
+            <Background></Background>
           </ReactFlow>
         </div>
       </ReactFlowProvider>
