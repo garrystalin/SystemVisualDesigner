@@ -1,35 +1,12 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-
-const plugins = [
-  new HtmlWebpackPlugin({
-      template: "./static/index.template.html",
-      favicon: "./static/favicon.ico",
-      publicPath: "/",
-      cache: false,
-  }),
-];
-
 module.exports = {
-  entry: "./src/app.tsx",
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: "ts-loader",
-        exclude: /node_modules/,
-      },
-    ],
-  },
-  resolve: {
-    extensions: [".tsx", ".ts", ".js"],
-  },
+  entry: [
+    "./src/index.tsx",
+  ],
   output: {
-    filename: "app.js",
-    path: path.resolve(__dirname, "build"),
+    filename: "./build/js/main.6e2e9362.js",
   },
-  plugins: plugins,
-  watchOptions: {
-    ignored: '**/node_modules'
-  }
+  devtool: "source-map",
+  resolve: {
+    extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
+  },
 };
