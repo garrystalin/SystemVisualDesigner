@@ -1,20 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
     "jsx": "react",
     "removeComments": true,
-    "experimentalDecorators": true,
     "alwaysStrict": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "noUnusedLocals": true,
     "esModuleInterop": true,
-    "noFallthroughCasesInSwitch": true,
     "sourceMap": true
   }
 }
