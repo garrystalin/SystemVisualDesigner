@@ -1,5 +1,3 @@
 import React from "react";
 
-const NavBar = () => {return <div>Хлебные крошки</div>};
-
-export default NavBar;
+export const NavBar = (params) => {return <div>{params.path}</div>};

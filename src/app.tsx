@@ -6,82 +6,100 @@ import ReactFlow, {
   useEdgesState,
   Controls,
   Background,
-  Connection,
-  Edge,
   NodeTypes,
 } from "react-flow-renderer";
-import NavBar from "./NavBar/NavBar";
+import { NavBar } from "./NavBar/NavBar";
 import "./App.scss";
 import Menu from "./Menu/Menu";
-import DefaultNode from "./Nodes/DefaultNode";
+import { DefaultNode } from "./Nodes/DefaultNode";
+import { v4 as uuidv4 } from "uuid";
 
-let id = 0;
-const getId = () => `dndnode_${id++}`;
 const nodeTypes = { defaultNode: DefaultNode };
 
-const App = () => {
+const onDragOverCallback = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+};
+
+const onDropCallback = (event, wrapper, instance, setNodes) => {
+  event.preventDefault();
+
+  const reactFlowBounds = wrapper.current.getBoundingClientRect();
+  const type = event.dataTransfer.getData("application/reactflow");
+
+  if (typeof type === "undefined" || !type) {
+    return;
+  }
+
+  const position = instance.project({
+    x: event.clientX - reactFlowBounds.left,
+    y: event.clientY - reactFlowBounds.top,
+  });
+
+  const newNode = {
+    id: getId(),
+    type: "defaultNode",
+    position,
+    data: { label: `${type} node` },
+  };
+
+  setNodes((nodes: any[]) => nodes.concat(newNode));
+};
+
+const onLoadFile = (event, setNodes, setEdges) => {
+  let reader = new FileReader();
+  let file = event.target.files[0];
+
+  reader.onloadend = () => {
+    var loadedNodes = JSON.parse(reader.result as string);
+    setNodes(loadedNodes.nodes);
+    setEdges(loadedNodes.edges);
+  };
+
+  reader.readAsText(file);
+};
+
+const getId = () => uuidv4();
+
+const rootNode = {
+  id: getId(),
+  type: "default",
+  position: null,
+  data: {
+    nodes: [],
+    parentNode: null,
+  },
+};
+
+export const App = () => {
   const reactFlowWrapper = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [currentNode, setCurrentNode] = useState(rootNode);
+  const [currentPath, setCurrentPath] = useState("/");
+  const [nodes, setNodes, onNodesChange] = useNodesState(currentNode.data.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onConnect = useCallback(
-    (params: Edge<any> | Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
   );
-
-  const onDragOver = useCallback((event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
 
   const onDrop = useCallback(
-    (event) => {
-      event.preventDefault();
-
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData("application/reactflow");
-
-      // check if the dropped element is valid
-      if (typeof type === "undefined" || !type) {
-        return;
-      }
-
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
-      });
-
-      const newNode = {
-        id: getId(),
-        type: "defaultNode",
-        position,
-        data: { label: `${type} node` },
-      };
-
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [reactFlowInstance]
+    (event) =>
+      onDropCallback(event, reactFlowWrapper, reactFlowInstance, setNodes),
+    [reactFlowInstance, setNodes]
   );
-
-  const onLoadFile = (event) => {
-    let reader = new FileReader();
-    let file = event.target.files[0];
-
-    reader.onloadend = () => {
-      var loadedNodes = JSON.parse(reader.result as string);
-      setNodes(loadedNodes.nodes);
-      setEdges(loadedNodes.edges);
-    };
-
-    reader.readAsText(file);
-  };
 
   return (
     <div className="dndflow">
+      {/* todo убрать? */}
       <ReactFlowProvider>
-        <Menu edges={edges} nodes={nodes} onLoadFile={onLoadFile} />
-        <NavBar />
+        <Menu
+          edges={edges}
+          nodes={nodes}
+          onLoadFile={(e) => onLoadFile(e, setNodes, setEdges)}
+        />
+        <NavBar path={currentPath} />
         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
           <ReactFlow
             edges={edges}
@@ -92,7 +110,7 @@ const App = () => {
             onConnect={onConnect}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
-            onDragOver={onDragOver}
+            onDragOver={useCallback(onDragOverCallback, [])}
             snapToGrid={true}
             fitView
           >
@@ -104,5 +122,3 @@ const App = () => {
     </div>
   );
 };
-
-export default App;

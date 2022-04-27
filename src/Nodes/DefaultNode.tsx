@@ -22,13 +22,13 @@ const renderDescription = (text: string) => (
   <div className="default-node-description">{text}</div>
 );
 
-const renderLinks = (links) => (
+const renderLinks = (nodes) => (
   <div className="default-node-links">
     <div className="default-node-links-inside">
-      In:|{links ? links.inside : 0}
+      In:|{nodes ? nodes.count() : 0}
     </div>
     <div className="default-node-links-all"></div>
-    {links ? links.inside : ""} {links ? links.count : ""}
+    {nodes ? nodes.count() : ""}
   </div>
 );
 
@@ -64,7 +64,7 @@ const renderControl = () => (
   </div>
 );
 
-const DefaultNode = (props: { data }) => {
+export const DefaultNode = (props: { data }) => {
   // const onChange = useCallback((event) => {
   //   console.log(event.target.value);
   // }, []);
@@ -79,11 +79,10 @@ const DefaultNode = (props: { data }) => {
       {targetHandle()}
       {renderTitle(props.data.label)}
       {renderDescription(props.data.description)}
-      {renderLinks(props.data.links)}
+      {renderLinks(props.data.nodes)}
       {isMouseOver && renderControl()}
       {sourceHandle()}
     </div>
   );
 };
 
-export default DefaultNode;
