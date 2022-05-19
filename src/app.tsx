@@ -1,124 +1,50 @@
-import React, { useState, useRef, useCallback } from "react";
-import ReactFlow, {
-  ReactFlowProvider,
-  addEdge,
-  useNodesState,
-  useEdgesState,
-  Controls,
-  Background,
-  NodeTypes,
-} from "react-flow-renderer";
+import React, { useState, useRef } from "react";
 import { NavBar } from "./NavBar/NavBar";
 import "./App.scss";
 import Menu from "./Menu/Menu";
-import { DefaultNode } from "./Nodes/DefaultNode";
-import { v4 as uuidv4 } from "uuid";
+import { Flow } from "./Flow/Flow";
+import { IFlowState, INodeState } from "./Interfaces";
+import { FlowElement } from "./Common";
 
-const nodeTypes = { defaultNode: DefaultNode };
-
-const onDragOverCallback = (event) => {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "move";
-};
-
-const onDropCallback = (event, wrapper, instance, setNodes) => {
-  event.preventDefault();
-
-  const reactFlowBounds = wrapper.current.getBoundingClientRect();
-  const type = event.dataTransfer.getData("application/reactflow");
-
-  if (typeof type === "undefined" || !type) {
-    return;
-  }
-
-  const position = instance.project({
-    x: event.clientX - reactFlowBounds.left,
-    y: event.clientY - reactFlowBounds.top,
-  });
-
-  const newNode = {
-    id: getId(),
-    type: "defaultNode",
-    position,
-    data: { label: `${type} node` },
-  };
-
-  setNodes((nodes: any[]) => nodes.concat(newNode));
-};
-
-const onLoadFile = (event, setNodes, setEdges) => {
+const onLoadFile = (event, setFlowState) => {
   let reader = new FileReader();
-  let file = event.target.files[0];
-
   reader.onloadend = () => {
-    var loadedNodes = JSON.parse(reader.result as string);
-    setNodes(loadedNodes.nodes);
-    setEdges(loadedNodes.edges);
+    var loadedNodes = JSON.parse(reader.result as string) as INodeState;
+    var flowState = new FlowElement(
+      { edges: loadedNodes.edges, nodes: loadedNodes.nodes },
+      "/"
+    );
+    setFlowState(flowState);
   };
-
-  reader.readAsText(file);
+  reader.readAsText(event.target.files[0]);
 };
 
-const getId = () => uuidv4();
-
-const rootNode = {
-  id: getId(),
-  type: "default",
-  position: null,
-  data: {
-    nodes: [],
-    parentNode: null,
-  },
-};
+const rootFlowState: IFlowState = new FlowElement(
+  { edges: [], nodes: [] },
+  "/"
+);
 
 export const App = () => {
+  const [flowState, setFlowState] = useState(rootFlowState);
   const reactFlowWrapper = useRef(null);
-  const [currentNode, setCurrentNode] = useState(rootNode);
-  const [currentPath, setCurrentPath] = useState("/");
-  const [nodes, setNodes, onNodesChange] = useNodesState(currentNode.data.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
-
-  const onDrop = useCallback(
-    (event) =>
-      onDropCallback(event, reactFlowWrapper, reactFlowInstance, setNodes),
-    [reactFlowInstance, setNodes]
-  );
+  const onClick = (flowState: IFlowState): void => {
+    setFlowState(flowState);
+  };
 
   return (
     <div className="dndflow">
-      {/* todo убрать? */}
-      <ReactFlowProvider>
-        <Menu
-          edges={edges}
-          nodes={nodes}
-          onLoadFile={(e) => onLoadFile(e, setNodes, setEdges)}
-        />
-        <NavBar path={currentPath} />
-        <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-          <ReactFlow
-            edges={edges}
-            nodes={nodes}
-            nodeTypes={nodeTypes as unknown as NodeTypes}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onInit={setReactFlowInstance}
-            onDrop={onDrop}
-            onDragOver={useCallback(onDragOverCallback, [])}
-            snapToGrid={true}
-            fitView
-          >
-            <Controls />
-            <Background></Background>
-          </ReactFlow>
-        </div>
-      </ReactFlowProvider>
+      <Menu
+        edges={flowState.nodeState.edges}
+        nodes={flowState.nodeState.nodes}
+        onLoadFile={(e) => onLoadFile(e, setFlowState)}
+      />
+      <NavBar flowState={flowState} onClick={onClick} />
+      <Flow
+        reactFlowWrapper={reactFlowWrapper}
+        edges={flowState.nodeState.edges}
+        nodes={flowState.nodeState.nodes}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 {
-  "name": "SystemVisualDesigner",
+  "name": "system-visual-designer",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -38,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.3.4"
   }
 }
