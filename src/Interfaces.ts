@@ -1,14 +1,16 @@
 import { Edge, Node } from "react-flow-renderer";
 
 export interface IFlowState {
-  name: string;
-  nodeState: INodeState;
-  prevElement: IFlowState;
-  reverceForEach(callback: (value: IFlowState) => void): void;
-  map<U>(callbackfn: (value: IFlowState, index: number) => U): U[];
+    count: number;
+    name: string;
+    description: string;
+    nodeState: INodeState;
+    prevElement: IFlowState;
+
+    onEnter?: (nodes: Node[], edges: Edge[]) => void;
 }
 
 export interface INodeState {
-  nodes: Node<any>[];
-  edges: Edge<any>[];
+    nodes: Node[];
+    edges: Edge[];
 }

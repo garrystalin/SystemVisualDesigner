@@ -1,34 +1,18 @@
-import { IFlowState, INodeState } from "./Interfaces";
+import { Edge, Node } from "react-flow-renderer";
+import { IFlowState } from "./Interfaces";
 
-export class FlowElement implements IFlowState {
-    name: string;
-    nodeState: INodeState;
-    prevElement: IFlowState | null;
-    constructor(
-      nodeState: INodeState,
-      name: string,
-      prevElement: IFlowState = null
-    ) {
-      this.name = name;
-      this.nodeState = nodeState;
-      this.prevElement = prevElement;
-    }
-    map<U>(callback: (value: IFlowState, index: number) => U): U[] {
-      let current = this as IFlowState;
-      const arr = [];
-      let index = 0;
-      do {
-        arr.push(callback(current, index));
-        current = this.prevElement;
-        index++;
-      } while (current);
-      return arr;
-    }
-    reverceForEach = (callback: (value: IFlowState) => void): void => {
-      let current = this as IFlowState;
-      do {
-        callback(current);
-        current = current.prevElement;
-      } while (current);
+export const getNewFlowState = (
+    nodes: Node[],
+    edges: Edge[],
+    prevElement: IFlowState,
+    onEnterNode: (flowState: IFlowState, nodes, edges) => void
+): IFlowState => {
+    return {
+        count: 0,
+        description: "desc",
+        name: "NodeName",
+        nodeState: { edges: edges ?? [], nodes: nodes ?? [] },
+        prevElement: prevElement,
+        onEnter: (nodes, edges) => onEnterNode(this, nodes, edges),
     };
-  }
+};

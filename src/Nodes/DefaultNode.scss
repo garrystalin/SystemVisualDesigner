@@ -1,4 +1,9 @@
 .default-node {
     background: aquamarine;
     width: 200px;
+    &-control {
+        position: absolute;
+        display: flex;
+        margin: -17px 0px 0px 133px;
+    }
 }
